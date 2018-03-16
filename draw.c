@@ -59,6 +59,7 @@ void add_sphere( struct matrix * edges,
   ====================*/
 struct matrix * generate_sphere(double cx, double cy, double cz,
                                 double r, int step ) {
+  int x = 
   return NULL;
 }
 
