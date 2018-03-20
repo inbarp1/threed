@@ -24,6 +24,20 @@
 void add_box( struct matrix * edges,
               double x, double y, double z,
               double width, double height, double depth ) {
+  add_edge(edges,x,y,z,x+width,y,z);
+  add_edge(edges,x,y,z,x,y-height,z);
+  add_edge(edges,x,y,z,x,y,z-depth);
+  
+  add_edge(edges,x,y-height,z-depth,x,y,z-depth);
+  add_edge(edges,x,y-height,z-depth,x,y-height,z);
+
+  add_edge(edges,x+width,y,z-depth,x,y,z-depth);
+  add_edge(edges,x+width,y,z-depth,x+width,y,z);
+  add_edge(edges,x+width,y,z-depth,x+width,y-height,z-depth);
+  add_edge(edges,x+width,y-height,z-depth,x+width,y-height,z);
+  add_edge(edges,x+width,y-height,z-depth,x,y-height,z-depth);
+  add_edge(edges,x+width,y-height,z,x,y-height,z);
+  add_edge(edges,x+width,y-height,z,x+width,y,z);
 }
 
 /*======== void add_sphere() ==========
@@ -42,6 +56,11 @@ void add_box( struct matrix * edges,
 void add_sphere( struct matrix * edges, 
                  double cx, double cy, double cz,
                  double r, int step ) {
+  struct matrix * points = generate_sphere(cx,cy,cz,r,step);
+  for(int i=0;i<points->lastcol;i++){
+    add_edge(edges,points->m[0][i],points->m[1][i],points->m[2][i],points->m[0][i]+1,points->m[1][i]+1,points->m[2][i]+1);
+  }
+  free(points);
   return;
 }
 
@@ -59,8 +78,19 @@ void add_sphere( struct matrix * edges,
   ====================*/
 struct matrix * generate_sphere(double cx, double cy, double cz,
                                 double r, int step ) {
-  int x = 
-  return NULL;
+  struct matrix * sph = new_matrix(4,step*step);
+  double x,y,z;
+  for(int i=0;i<=step;i++){
+    double pheta = (double)i/step;
+    for(int j=0;j<=step;j++){
+      double theta = (double)j/step;
+      x=r*cos(theta*M_PI)+cx;
+      y=r*sin(theta*M_PI)*cos(pheta*M_PI*2)+cy;
+      z=r*sin(theta*M_PI)*sin(pheta*M_PI*2)+cz;
+      add_point(sph,x,y,z);
+    }
+  }
+  return sph;
 }
 
 /*======== void add_torus() ==========
@@ -80,6 +110,11 @@ struct matrix * generate_sphere(double cx, double cy, double cz,
 void add_torus( struct matrix * edges, 
                 double cx, double cy, double cz,
                 double r1, double r2, int step ) {
+ struct matrix * points=generate_torus(cx,cy,cz,r1,r2,step);
+ for(int i =0; i<points->lastcol;i++){
+    add_edge(edges,points->m[0][i],points->m[1][i],points->m[2][i],points->m[0][i]+1,points->m[1][i]+1,points->m[2][i]+1);
+  }
+  free(points);
   return;
 }
 
@@ -97,7 +132,19 @@ void add_torus( struct matrix * edges,
   ====================*/
 struct matrix * generate_torus( double cx, double cy, double cz,
                                 double r1, double r2, int step ) {
-  return NULL;
+  struct matrix * tor = new_matrix(4,step*step);
+  double x,y,z;
+  for(int i=0;i<=step;i++){
+    double pheta = (double)i/step;
+    for(int j=0;j<=step;j++){
+      double theta = (double)j/step;
+      x=cos(pheta*2*M_PI)*(r1*cos(theta*2*M_PI)+r2)+cx;
+      y=r1*sin(theta*2*M_PI)+cy;
+      z=-sin(pheta*2*M_PI)*(r1*cos(theta*2*M_PI)+r2)+cz;
+      add_point(tor,x,y,z);
+    }
+  }
+  return tor;
 }
 
 /*======== void add_circle() ==========
@@ -188,7 +235,7 @@ Inputs:   struct matrix * points
          int y
          int z 
 Returns: 
-adds point (x, y, z) to points and increment points.lastcol
+adds point (x, y, z) to points and increment points.last-<col
 if points is full, should call grow on points
 ====================*/
 void add_point( struct matrix * points, double x, double y, double z) {
